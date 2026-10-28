@@ -68,14 +68,14 @@
         <button class="photo-editor-close" type="button" aria-label="Fechar editor">×</button>
         <p class="photo-editor-kicker">ÁREA DA CRIADORA</p>
         <h2 id="photo-editor-title">Editar fotografias</h2>
-        <p class="photo-editor-note">Cole links diretos de imagens públicas. As alterações ficam salvas apenas neste aparelho e navegador; ainda não são publicadas para os visitantes.</p>
+        <p class="photo-editor-note">Escolha fotos diretamente do seu celular. Por enquanto, elas ficam salvas apenas neste aparelho e navegador, não para todos os visitantes.</p>
         <label for="editor-hero-main">Foto principal da capa</label>
-        <input id="editor-hero-main" type="url" placeholder="https://...">
+        <input id="editor-hero-main" type="file" accept="image/*">
         <label for="editor-hero-small">Foto menor da capa</label>
-        <input id="editor-hero-small" type="url" placeholder="https://...">
-        <label for="editor-gallery">Galeria (um link por linha, até 10 fotos)</label>
-        <textarea id="editor-gallery" rows="7" spellcheck="false"></textarea>
-        <p class="photo-editor-help">Use links diretos terminados em .jpg, .png ou .webp, ou links públicos que abram a própria imagem. Para remover uma foto, deixe a linha vazia. A galeria mantém os espaços existentes.</p>
+        <input id="editor-hero-small" type="file" accept="image/*">
+        <label for="editor-gallery">Fotos da galeria (selecione até 10)</label>
+        <input id="editor-gallery" type="file" accept="image/*" multiple>
+        <p class="photo-editor-help">As imagens serão ajustadas para carregar melhor no site. A publicação para todos os visitantes exige uma etapa adicional.</p>
         <div class="photo-editor-actions">
           <button type="button" id="editor-preview">Aplicar prévia</button>
           <button type="button" id="editor-save">Salvar neste aparelho</button>
@@ -90,55 +90,86 @@
     const heroSmallInput = overlay.querySelector("#editor-hero-small");
     const galleryInput = overlay.querySelector("#editor-gallery");
     const status = overlay.querySelector("#editor-status");
-    const getForm = () => ({
-      heroMain: heroMainInput.value.trim() || original.heroMain,
-      heroSmall: heroSmallInput.value.trim() || original.heroSmall,
-      photos: galleryInput.value.split("\\n").slice(0, 10).map((src, index) => ({
-        src: src.trim(),
-        alt: state.photos[index]?.alt || original.photos[index]?.alt || "Fotografia de Isabella"
-      }))
+    const readCompressed = file => new Promise((resolve, reject) => {
+      if (!file) return resolve("");
+      if (!file.type.startsWith("image/")) return reject(new Error("Escolha arquivos de imagem."));
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Não foi possível ler uma das imagens."));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error("Uma imagem não pôde ser aberta."));
+        img.onload = () => {
+          const max = 1400;
+          const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(img.naturalWidth * scale);
+          canvas.height = Math.round(img.naturalHeight * scale);
+          canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.8));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
     });
-    heroMainInput.value = state.heroMain;
-    heroSmallInput.value = state.heroSmall;
-    galleryInput.value = state.photos.map(photo => photo.src).join("\n");
-
+    const getForm = () => state;
+    const updateFromFiles = async () => {
+      status.textContent = "Preparando imagens...";
+      try {
+        const next = {
+          heroMain: heroMainInput.files[0] ? await readCompressed(heroMainInput.files[0]) : state.heroMain,
+          heroSmall: heroSmallInput.files[0] ? await readCompressed(heroSmallInput.files[0]) : state.heroSmall,
+          photos: state.photos.map(photo => ({...photo}))
+        };
+        if (galleryInput.files.length) {
+          const files = Array.from(galleryInput.files).slice(0, 10);
+          const converted = await Promise.all(files.map(readCompressed));
+          next.photos = converted.map((src, index) => ({
+            src,
+            alt: state.photos[index]?.alt || "Fotografia de Isabella"
+          }));
+          while (next.photos.length < 10) {
+            const index = next.photos.length;
+            next.photos.push({src:"", alt:state.photos[index]?.alt || "Fotografia de Isabella"});
+          }
+        }
+        applyState(next);
+        state = next;
+        status.textContent = "Prévia aplicada. Toque em “Salvar neste aparelho” para guardar.";
+      } catch (error) {
+        status.textContent = error.message || "Não foi possível carregar as imagens.";
+      }
+    };
+    heroMainInput.addEventListener("change", updateFromFiles);
+    heroSmallInput.addEventListener("change", updateFromFiles);
+    galleryInput.addEventListener("change", updateFromFiles);
     overlay.querySelector(".photo-editor-close").addEventListener("click", () => overlay.remove());
     overlay.addEventListener("click", event => { if (event.target === overlay) overlay.remove(); });
     overlay.querySelector("#editor-preview").addEventListener("click", () => {
-      const next = getForm();
-      applyState(next);
-      status.textContent = "Prévia aplicada. Ainda não foi publicada.";
+      status.textContent = "As imagens selecionadas já aparecem na prévia.";
     });
     overlay.querySelector("#editor-save").addEventListener("click", () => {
-      const next = getForm();
       try {
-        localStorage.setItem(storageKey, JSON.stringify(next));
-        applyState(next);
-        status.textContent = "Salvo neste aparelho e navegador. Outros visitantes não verão estas alterações.";
+        localStorage.setItem(storageKey, JSON.stringify(state));
+        status.textContent = "Salvo neste aparelho e navegador. Ainda não foi publicado para os visitantes.";
       } catch {
-        status.textContent = "Não foi possível salvar neste navegador. Tente exportar a configuração.";
+        status.textContent = "As imagens ficaram grandes demais para o armazenamento do navegador. Tente selecionar menos fotos.";
       }
     });
     overlay.querySelector("#editor-export").addEventListener("click", () => {
-      const next = getForm();
-      const blob = new Blob([JSON.stringify(next, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = "isabella-fotografia-fotos.json";
       link.click();
       URL.revokeObjectURL(url);
-      status.textContent = "Configuração exportada. Ela ainda precisa ser publicada no site.";
+      status.textContent = "Configuração exportada, mas ainda precisa ser publicada no site.";
     });
     overlay.querySelector("#editor-reset").addEventListener("click", () => {
       try { localStorage.removeItem(storageKey); } catch {}
-      const fresh = initialState;
-      applyState(fresh);
-      heroMainInput.value = fresh.heroMain;
-      heroSmallInput.value = fresh.heroSmall;
-      galleryInput.value = fresh.photos.map(photo => photo.src).join("\n");
+      applyState(initialState);
+      state = initialState;
       status.textContent = "Fotos originais restauradas neste navegador.";
     });
-    heroMainInput.focus();
   }
 })();
