@@ -141,7 +141,7 @@
     });
     overlay.querySelector("#editor-reset").addEventListener("click", () => {
       try { localStorage.removeItem(storageKey); } catch {}
-      const fresh = defaultState();
+      const fresh = initialState;
       applyState(fresh);
       heroMainInput.value = fresh.heroMain;
       heroSmallInput.value = fresh.heroSmall;
