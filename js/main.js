@@ -14,11 +14,7 @@
     items.forEach(item => observer.observe(item));
   }
 
-  // Editor por endereço especial: /?editor=atelier
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("editor") === "atelier") {
-    openPhotoEditor();
-  }
+
 
   const gallery = document.querySelector(".gallery");
   const heroMain = document.querySelector(".hero-photo-main img");
@@ -171,5 +167,11 @@
       state = initialState;
       status.textContent = "Fotos originais restauradas neste navegador.";
     });
+  }
+
+  // Abrir o editor somente depois de inicializar o estado e os controles.
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("editor") === "atelier") {
+    window.addEventListener("DOMContentLoaded", () => openPhotoEditor(), { once: true });
   }
 })();
