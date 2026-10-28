@@ -47,6 +47,7 @@
       return saved ? JSON.parse(saved) : defaultState();
     } catch { return defaultState(); }
   };
+  const initialState = defaultState();
   let state = loadState();
 
   function applyState(next) {
@@ -89,7 +90,7 @@
         <p id="editor-status" aria-live="polite"></p>
       </section>`;
     document.body.appendChild(overlay);
-    const original = defaultState();
+    const original = initialState;
     const heroMainInput = overlay.querySelector("#editor-hero-main");
     const heroSmallInput = overlay.querySelector("#editor-hero-small");
     const galleryInput = overlay.querySelector("#editor-gallery");
