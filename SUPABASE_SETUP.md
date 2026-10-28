@@ -21,5 +21,11 @@ Este site usa GitHub Pages, então não deve conter uma chave secreta de servido
 ## 4. Criar o acesso de administradora
 No Supabase, abra Authentication → Users → Add user e crie um usuário só para você. Use um e-mail seu e uma senha forte. Não compartilhe a senha no chat.
 
+## 5. Abrir o painel de publicação
+Depois de configurar URL/chave, executar o SQL e criar seu usuário, abra:
+https://isabellagoetten-design.github.io/isabella-fotografia/?editor=cloud
+
+Entre com o e-mail e a senha do usuário criado no Supabase. O painel permite publicar a foto principal, a foto menor e até 10 fotos da galeria. Os arquivos são convertidos para JPEG e enviados ao bucket; o site carrega as versões hospedadas para todos os visitantes.
+
 ## Importante
-Os arquivos de configuração e as políticas ficam preparados, mas o painel de upload ainda precisa ser conectado a esse projeto e testado depois que você preencher a URL/chave e criar o usuário. Não publique fotos importantes até validar o fluxo.
+O código da integração já está no repositório, mas a publicação global só poderá funcionar depois que você preencher a URL/chave pública, executar o SQL e criar o usuário no projeto separado. Ainda não foi possível testar uma publicação real sem essas credenciais/configurações. Nunca use a chave `service_role` no site. Se aparecer erro de upload, revise as políticas e o usuário autenticado no Supabase.
