@@ -57,8 +57,12 @@
     (next.photos || []).forEach((photo, index) => {
       const figure = current[index];
       const img = figure?.querySelector("img");
-      if (img && photo.src) img.src = photo.src;
-      if (img && typeof photo.alt === "string") img.alt = photo.alt;
+      if (img) {
+        if (photo.src) img.src = photo.src;
+        else img.removeAttribute("src");
+        if (typeof photo.alt === "string") img.alt = photo.alt;
+      }
+      if (figure) figure.hidden = !photo.src;
     });
     state = next;
   }
@@ -99,7 +103,7 @@
       heroMain: heroMainInput.value.trim() || original.heroMain,
       heroSmall: heroSmallInput.value.trim() || original.heroSmall,
       photos: galleryInput.value.split("\\n").slice(0, 10).map((src, index) => ({
-        src: src.trim() || original.photos[index]?.src || "",
+        src: src.trim(),
         alt: state.photos[index]?.alt || original.photos[index]?.alt || "Fotografia de Isabella"
       }))
     });
