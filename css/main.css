@@ -34,3 +34,17 @@
 .photo-editor-actions button.secondary{background:transparent;color:var(--wine)}
 #editor-status{min-height:18px;margin:14px 0 0;font-size:11px;line-height:1.5;color:var(--wine)}
 @media(max-width:480px){.photo-editor{padding:27px 17px 19px}.photo-editor h2{font-size:28px}.photo-editor-actions{grid-template-columns:1fr}.photo-editor-actions button{padding:13px}}
+
+
+/* Editor privado de fotos com publicação global via Supabase */
+#cloud-photo-editor{position:fixed;inset:0;z-index:10000;background:rgba(35,25,21,.76);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.cloud-photo-panel{position:relative;width:min(100%,560px);max-height:calc(100dvh - 32px);overflow:auto;background:var(--white);color:var(--ink);padding:30px 24px 24px;border:1px solid var(--pink);box-shadow:0 18px 70px rgba(0,0,0,.28);border-radius:8px}
+.cloud-photo-panel h2{font-size:30px;margin:0 34px 12px 0}
+.cloud-photo-panel label{display:block;font-size:11px;font-weight:600;margin:16px 0 6px;color:var(--wine)}
+.cloud-photo-panel input{display:block;width:100%;font:12px var(--sans);color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:4px;padding:11px}
+.cloud-photo-close{position:absolute;top:13px;right:16px;border:0;background:transparent;color:var(--wine);font-size:28px;line-height:1;cursor:pointer}
+.cloud-photo-primary,.cloud-photo-secondary{display:block;width:100%;margin-top:9px;padding:12px 10px;border:1px solid var(--wine);border-radius:4px;background:var(--wine);color:var(--white);font:600 11px var(--sans);cursor:pointer}
+.cloud-photo-secondary{background:transparent;color:var(--wine)}
+#cloud-photo-status{min-height:18px;margin:14px 0 0;font-size:12px;line-height:1.5;color:var(--wine)}
+.cloud-photo-panel [hidden]{display:none!important}
+@media(max-width:480px){.cloud-photo-panel{padding:27px 17px 19px}.cloud-photo-panel h2{font-size:27px}}
