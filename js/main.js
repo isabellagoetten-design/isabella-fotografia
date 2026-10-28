@@ -21,7 +21,7 @@
   wordmark?.addEventListener("click", event => {
     taps += 1;
     clearTimeout(tapReset);
-    tapReset = setTimeout(() => { taps = 0; }, 1800);
+    tapReset = setTimeout(() => { taps = 0; }, 4000);
     if (taps >= 5) {
       event.preventDefault();
       taps = 0;
