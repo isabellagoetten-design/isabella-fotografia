@@ -14,20 +14,11 @@
     items.forEach(item => observer.observe(item));
   }
 
-  // Editor discreto: toque/clique repetido no nome da marca.
-  const wordmark = document.querySelector(".wordmark");
-  let taps = 0;
-  let tapReset;
-  wordmark?.addEventListener("click", event => {
-    taps += 1;
-    clearTimeout(tapReset);
-    tapReset = setTimeout(() => { taps = 0; }, 4000);
-    if (taps >= 5) {
-      event.preventDefault();
-      taps = 0;
-      openPhotoEditor();
-    }
-  });
+  // Editor por endereço especial: /?editor=atelier
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("editor") === "atelier") {
+    openPhotoEditor();
+  }
 
   const gallery = document.querySelector(".gallery");
   const heroMain = document.querySelector(".hero-photo-main img");
